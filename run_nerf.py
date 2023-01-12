@@ -17,6 +17,7 @@ from load_llff import load_llff_data
 from load_deepvoxels import load_dv_data
 from load_blender import load_blender_data
 from load_LINEMOD import load_LINEMOD_data
+from load_dex import load_dex_data
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -422,6 +423,10 @@ def config_parser():
 
     import configargparse
     parser = configargparse.ArgumentParser()
+
+    parser.add_argument('--iter', type=int, default=200000,
+                        help='total iter num')  
+
     parser.add_argument('--config', is_config_file=True, 
                         help='config file path')
     parser.add_argument("--expname", type=str, 
@@ -603,6 +608,16 @@ def train():
         near = hemi_R-1.
         far = hemi_R+1.
 
+    elif args.dataset_type == 'dex':
+        images, poses, render_poses, hwf, i_split, data_camera_k = load_dex_data(args.datadir, args.half_res, args.testskip)
+        print('Loaded dex', images.shape, render_poses.shape, hwf, args.datadir)
+        i_train, i_val, i_test = i_split
+
+        near = 0.1
+        far = 200
+
+        K = data_camera_k
+
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
@@ -698,7 +713,7 @@ def train():
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
 
-    N_iters = 200000 + 1
+    N_iters = args.iter + 1
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
