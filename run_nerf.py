@@ -17,7 +17,7 @@ from load_llff import load_llff_data
 from load_deepvoxels import load_dv_data
 from load_blender import load_blender_data
 from load_LINEMOD import load_LINEMOD_data
-from load_dex import load_dex_data
+from load_dex import load_dex_data,load_dex_simulated
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -617,7 +617,13 @@ def train():
         far = 200
 
         K = data_camera_k
+    elif args.dataset_type == 'dexsimulated':
+        images, poses, render_poses, hwf, i_split = load_dex_simulated(args.datadir, args.half_res, args.testskip)
+        print('Loaded dexsimulated', images.shape, render_poses.shape, hwf, args.datadir)
+        i_train, i_val, i_test = i_split
 
+        near = 0.5
+        far = 10
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
