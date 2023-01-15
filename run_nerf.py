@@ -171,10 +171,10 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
-            depths_np = np.array(depths, np.float32).reshape(rgb8.shape[0:2])
-            imageio.imwrite(depth_filename, depths_np)
-            depth_npz_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
-            np.save(depth_npz_filename, depths_np)
+            imageio.imwrite(depth_filename, to8b(depths[-1]))
+            depth_npy_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
+            depths_np = np.array(depths[-1], np.float64)
+            np.save(depth_npy_filename, depths_np)
 
 
     rgbs = np.stack(rgbs, 0)
@@ -618,21 +618,28 @@ def train():
         far = hemi_R+1.
 
     elif args.dataset_type == 'dex':
-        images, poses, render_poses, hwf, i_split, data_camera_k = load_dex_data(args.datadir, args.half_res, args.testskip)
+        images, poses, render_poses, hwf, i_split, K = load_dex_data(args.datadir, args.half_res, args.testskip)
         print('Loaded dex', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
         near = 0.1
         far = 200
 
-        K = data_camera_k
     elif args.dataset_type == 'dexsimulated':
-        images, poses, render_poses, hwf, i_split = load_dex_simulated(args.datadir, args.half_res, args.testskip)
+        images, poses, render_poses, hwf, i_split, K = load_dex_simulated(args.datadir, args.half_res, args.testskip)
         print('Loaded dexsimulated', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
         near = 0.5
         far = 10
+    elif args.dataset_type == 'avt':
+        from load_avt import load_avt
+        images, poses, render_poses, hwf, i_split, K = load_avt(args.datadir, args.half_res, args.testskip)
+        print('Loaded avt', images.shape, render_poses.shape, hwf, args.datadir)
+        i_train, i_val, i_test = i_split
+
+        near = 0.1
+        far = 1
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
