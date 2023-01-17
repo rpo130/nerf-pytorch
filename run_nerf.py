@@ -638,8 +638,8 @@ def train():
         print('Loaded avt', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.1
-        far = 1
+        near = 0.05
+        far = 5.
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
