@@ -170,8 +170,13 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             rgb8 = to8b(rgbs[-1])
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
+
+            gt_filename = os.path.join(savedir, '{:03d}_gt.png'.format(i))
+            imageio.imwrite(gt_filename, gt_imgs[i])
+
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
             imageio.imwrite(depth_filename, to8b(depths[-1]))
+
             depth_npy_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
             depths_np = np.array(depths[-1], np.float64)
             np.save(depth_npy_filename, depths_np)
@@ -623,7 +628,7 @@ def train():
         i_train, i_val, i_test = i_split
 
         near = 0.1
-        far = 200
+        far = 10
 
     elif args.dataset_type == 'dexsimulated':
         images, poses, render_poses, hwf, i_split, K = load_dex_simulated(args.datadir, args.half_res, args.testskip)
