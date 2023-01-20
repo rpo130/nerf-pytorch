@@ -633,13 +633,13 @@ def train():
         near = 0.5
         far = 10
     elif args.dataset_type == 'avt':
-        from load_avt import load_avt
-        images, poses, render_poses, hwf, i_split, K = load_avt(args.datadir, args.half_res, args.testskip)
+        from load_avt import load_avt_v2
+        images, poses, render_poses, hwf, i_split, K = load_avt_v2(args.datadir, args.half_res, args.testskip)
         print('Loaded avt', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.05
-        far = 5.
+        near = 0.1
+        far = 3
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
