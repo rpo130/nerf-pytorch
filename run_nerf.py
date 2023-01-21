@@ -171,8 +171,9 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
 
-            gt_filename = os.path.join(savedir, '{:03d}_gt.png'.format(i))
-            imageio.imwrite(gt_filename, gt_imgs[i])
+            if gt_imgs is not None:
+                gt_filename = os.path.join(savedir, '{:03d}_gt.png'.format(i))
+                imageio.imwrite(gt_filename, gt_imgs[i])
 
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
             imageio.imwrite(depth_filename, to8b(depths[-1]))
