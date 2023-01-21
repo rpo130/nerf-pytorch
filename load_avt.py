@@ -3,9 +3,9 @@ import torch
 import numpy as np
 import imageio 
 import json
-import torch.nn.functional as F
 import cv2
 from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
+import random
 
 def load_avt(basedir, half_res=False, testskip=1):
     splits = ['train', 'val', 'test']
@@ -128,14 +128,23 @@ def load_avt_v2(basedir, half_res=False, testskip=1):
     i_train = []
     i_val = [] 
     i_test = []
+
     for i in range(len(imgs)):
-        b = i % 10
+        b = random.randint(0,9)
         if b >=0 and b<8:
             i_train.append(i)
         elif b>=8 and b<9:
             i_val.append(i)
         else:
             i_test.append(i)
+
+    if len(i_train) == 0:
+        i_train.append(random.randint(0, len(imgs)-1))  
+    if len(i_val) == 0:
+        i_val.append(random.randint(0, len(imgs)-1))
+    if len(i_test) == 0:
+        i_test.append(random.randint(0, len(imgs)-1))
+
     i_split = [i_train, i_val, i_test]
 
     return imgs, poses, render_poses, [H, W, focal], i_split, K

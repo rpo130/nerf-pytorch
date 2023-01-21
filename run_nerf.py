@@ -645,7 +645,7 @@ def train():
         i_train, i_val, i_test = i_split
 
         near = 0.1
-        far = 3
+        far = 5
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
@@ -674,10 +674,27 @@ def train():
         for arg in sorted(vars(args)):
             attr = getattr(args, arg)
             file.write('{} = {}\n'.format(arg, attr))
+    
     if args.config is not None:
         f = os.path.join(basedir, expname, 'config.txt')
         with open(f, 'w') as file:
             file.write(open(args.config, 'r').read())
+    
+    f = os.path.join(basedir, expname, 'split.txt')
+    with open(f, 'w') as file:
+        file.write('train\n')
+        for i in i_train:
+            file.write(f'{i}\n')
+        file.write('\n')
+
+        file.write('val\n')
+        for i in i_val:
+            file.write(f'{i}\n')
+        file.write('\n')
+
+        file.write('test\n')
+        for i in i_test:
+            file.write(f'{i}\n')
 
     # Create nerf model
     render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_nerf(args)
