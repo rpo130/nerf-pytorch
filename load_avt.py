@@ -145,6 +145,18 @@ def load_avt_v2(basedir, half_res=False, testskip=1):
     if len(i_test) == 0:
         i_test.append(random.randint(0, len(imgs)-1))
 
+    if testskip == 0:
+        skip = 1
+    else:
+        skip = testskip
+
+    i_val = i_val[::skip]
+    i_test = i_test[::skip]
+
+    i_train = sorted(i_train)
+    i_val = sorted(i_val)
+    i_test = sorted(i_test)
+
     i_split = [i_train, i_val, i_test]
 
     return imgs, poses, render_poses, [H, W, focal], i_split, K
