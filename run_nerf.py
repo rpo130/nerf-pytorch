@@ -18,6 +18,8 @@ from load_deepvoxels import load_dv_data
 from load_blender import load_blender_data
 from load_LINEMOD import load_LINEMOD_data
 from load_dex import load_dex_data,load_dex_simulated
+from load_avt import load_avt_data
+
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -638,14 +640,14 @@ def train():
 
         near = 0.5
         far = 10
+        
     elif args.dataset_type == 'avt':
-        from load_avt import load_avt_v2
-        images, poses, render_poses, hwf, i_split, K = load_avt_v2(args.datadir, args.half_res, args.testskip)
+        images, poses, render_poses, hwf, i_split, K = load_avt_data(args.datadir, args.half_res, args.testskip)
         print('Loaded avt', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.1
-        far = 5
+        near = 0.05
+        far = 2
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return

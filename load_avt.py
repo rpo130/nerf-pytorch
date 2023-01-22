@@ -7,7 +7,7 @@ import cv2
 from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
 import random
 
-def load_avt_v2(basedir, half_res=False, testskip=1):
+def load_avt_data(basedir, half_res=False, testskip=1):
     with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
         meta = json.load(fp)
 
