@@ -720,10 +720,6 @@ def train():
             os.makedirs(testsavedir, exist_ok=True)
             print('test poses shape', render_poses.shape)
 
-            #render different pose
-            #from load_blender import trans_t
-            #render_poses = torch.stack([trans_t(0)], 0)
-
             rgbs, disps, depths = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
             print('Done rendering', testsavedir)
             if len(rgbs) > 1:
