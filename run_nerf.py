@@ -651,7 +651,7 @@ def train():
         i_train, i_val, i_test = i_split
 
         near = 0.
-        far = 1.
+        far = 6.
 
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
