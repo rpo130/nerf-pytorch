@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm, trange
+from torch.utils.tensorboard import SummaryWriter
 
 import matplotlib.pyplot as plt
 
@@ -175,7 +176,10 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
 
             if gt_imgs is not None:
                 gt_filename = os.path.join(savedir, '{:03d}_gt.png'.format(i))
-                imageio.imwrite(gt_filename, gt_imgs[i])
+                gt_img = gt_imgs[i]
+                if isinstance(gt_img, torch.Tensor):
+                    gt_img = gt_img.cpu().numpy()
+                imageio.imwrite(gt_filename, gt_img)
 
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
             imageio.imwrite(depth_filename, to8b(depths[-1]))
@@ -646,8 +650,9 @@ def train():
         print('Loaded avt', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.05
-        far = 2
+        near = 0.
+        far = 1.
+
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
@@ -753,14 +758,14 @@ def train():
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
 
-    N_iters = args.iter + 1
+    N_iters = args.iter
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
     print('VAL views are', i_val)
 
     # Summary writers
-    # writer = SummaryWriter(os.path.join(basedir, 'summaries', expname))
+    writer : SummaryWriter = SummaryWriter(os.path.join(basedir, 'summaries', expname))
     
     start = start + 1
     for i in trange(start, N_iters):
@@ -875,13 +880,18 @@ def train():
             os.makedirs(testsavedir, exist_ok=True)
             print('test poses shape', poses[i_test].shape)
             with torch.no_grad():
-                render_path(torch.Tensor(poses[i_test]).to(device), hwf, K, args.chunk, render_kwargs_test, gt_imgs=images[i_test], savedir=testsavedir)
+                render_path(torch.Tensor(poses[i_test]).to(device), hwf, K, args.chunk, render_kwargs_test, gt_imgs=images[i_test], savedir=testsavedir, render_factor=args.render_factor)
             print('Saved test set')
 
 
     
         if i%args.i_print==0:
             tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
+            writer.add_scalar('loss', loss, global_step=i)
+            writer.add_scalar('psnr', psnr, global_step=i)
+            if args.N_importance > 0:
+                writer.add_scalar('psnr0', psnr0, global_step=i)
+
         """
             print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())
             print('iter time {:.05f}'.format(dt))
@@ -925,6 +935,7 @@ def train():
         """
 
         global_step += 1
+    writer.close()
 
 def saveOrReloadSplit(f, i_train, i_val, i_test):
     if os.path.exists(f):
