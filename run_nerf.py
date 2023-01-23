@@ -651,7 +651,7 @@ def train():
         i_train, i_val, i_test = i_split
 
         near = 0.
-        far = 6.
+        far = 5.
 
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
@@ -754,7 +754,7 @@ def train():
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
 
-    N_iters = args.iter
+    N_iters = args.iter + 1
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)

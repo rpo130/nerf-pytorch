@@ -1,11 +1,11 @@
 iter = 200000
 
-expname = avt_data_glass_03
+expname = avt_data_glass_04
 basedir = ./logs
 datadir = ./data/avt_data_glass_20230118_1
 dataset_type = avt
 
-no_batching = False
+no_batching = True
 
 N_samples = 64
 N_importance = 128
@@ -29,6 +29,3 @@ render_test = True
 chunk = 16384
 
 testskip = 5
-
-no_ndc = True
-lindisp = False
