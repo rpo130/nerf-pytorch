@@ -245,7 +245,10 @@ def create_nerf(args):
         print('Reloading from', ckpt_path)
         ckpt = torch.load(ckpt_path)
 
-        start = ckpt['global_step']
+        if args.pretrain:
+            print('pretain')
+        else:
+            start = ckpt['global_step']
         optimizer.load_state_dict(ckpt['optimizer_state_dict'])
 
         # Load model
@@ -482,6 +485,8 @@ def config_parser():
                         help='do not reload weights from saved ckpt')
     parser.add_argument("--ft_path", type=str, default=None, 
                         help='specific weights npy file to reload for coarse network')
+    parser.add_argument("--pretrain", action='store_true', 
+                        help='pretrain mode, load ckpt but start from zero')
 
     # rendering options
     parser.add_argument("--N_samples", type=int, default=64, 
