@@ -6,6 +6,7 @@ import json
 import cv2
 from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
 import random
+from scipy.spatial.transform import Rotation as R
 
 def gen_split(imgs, testskip):
     i_train = []
@@ -51,9 +52,17 @@ def load_avt_data(basedir, half_res=False, testskip=1):
     poses = []
         
     for frame in meta['frames'][::1]:
-        fname = os.path.join(basedir, frame['file_path'] + '.png')
+        file_path = frame['file_path']
+        if '.png' not in file_path:
+            file_path = file_path + '.png'
+        fname = os.path.join(basedir, file_path)
         imgs.append(imageio.imread(fname))
-        poses.append(np.array(frame['transform_matrix']))
+        T_cam_face_to_world = np.array(frame['transform_matrix'])
+        #fix poses
+        T_img_to_cam_face = np.eye(4) 
+        T_img_to_cam_face[:3, :3] = R.from_euler("xyz", [180, 0, 0], degrees=True).as_matrix()
+        T_cam_to_world = T_cam_face_to_world @ T_img_to_cam_face
+        poses.append(T_cam_to_world)
     imgs = (np.array(imgs) / 255.).astype(np.float32)
     poses = np.array(poses).astype(np.float32)
     all_imgs.append(imgs)

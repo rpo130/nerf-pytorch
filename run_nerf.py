@@ -635,7 +635,7 @@ def train():
         i_train, i_val, i_test = i_split
 
         near = 0.1
-        far = 10
+        far = 1
 
     elif args.dataset_type == 'dexsimulated':
         images, poses, render_poses, hwf, i_split, K = load_dex_simulated(args.datadir, args.half_res, args.testskip)

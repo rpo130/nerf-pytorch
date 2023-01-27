@@ -1,7 +1,12 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import numpy as np
 
-file = 'logs/dex_nerf_real_wineglass/renderonly_path_199999/000_depth.png'
-img = mpimg.imread(file)
-plt.imshow(img)
-plt.show()
+file = '/home/ai/codebase/nerf-pytorch/logs/avt_data_glass_08/testset_001000/000_depth.npy'
+img = np.load(file)
+# img = mpimg.imread(file)
+# plt.imshow(img)
+# plt.show()
+print(np.mean(img))
+print(np.min(img))
+print(np.max(img))

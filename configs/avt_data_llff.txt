@@ -1,9 +1,9 @@
-iter = 200000
+iter = 2000000
 
-expname = dex_nerf_real_wineglass_01
+expname = avt_data_glass_08
 basedir = ./logs
-datadir = ./data/dex_nerf_real_wineglass
-dataset_type = dex
+datadir = ./data/avt_data_llff
+dataset_type = llff
 
 no_batching = True
 
@@ -18,10 +18,9 @@ raw_noise_std = 1e0
 white_bkgd = False
 
 i_print = 10
-i_img = 10000
 i_weights = 100
 i_testset = 1000
-i_video = 100000
+i_video = 50000
 
 no_reload = False
 
@@ -29,6 +28,8 @@ render_test = True
 
 chunk = 16384
 
-testskip = 50
+testskip = 1
 
 no_ndc
+
+factor = 1

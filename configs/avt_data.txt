@@ -28,4 +28,7 @@ render_test = True
 
 chunk = 16384
 
-testskip = 3
+testskip = 1
+
+no_ndc
+
