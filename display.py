@@ -57,6 +57,7 @@ def show_pose_entry():
 def compare_depth():
     #2 28 46
     ori = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/34_Depth.npy'
+    ori_color = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/34_Color.npy'
     gen = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth.npy'
     opt = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth_ff.npy'
 
@@ -65,33 +66,44 @@ def compare_depth():
     ax = fig.add_subplot(231)
     img_ori = np.load(ori)
     img = img_ori
-    ax.imshow(img, cmap='gray')
-    ax.set_title('ori')
+    im = ax.imshow(img, cmap='gray')
+    ax.set_title('ori depth')
+    fig.colorbar(im)
 
     ax = fig.add_subplot(232)
     img_gen = np.load(gen)
     img = img_gen
-    ax.imshow(img, cmap='gray')
-    ax.set_title('gen')
+    im = ax.imshow(img, cmap='gray')
+    fig.colorbar(im)
+
+    ax.set_title('vanilla')
 
     ax = fig.add_subplot(233)
-    img_opt = np.load(opt)
-    img = img_opt
-    ax.imshow(img, cmap='gray')
-    ax.set_title('opt')
+    img_dex = np.load(opt)
+    img = img_dex
+    im = ax.imshow(img, cmap='gray')
+    ax.set_title('dex')
+    fig.colorbar(im)
 
+    ax = fig.add_subplot(234)
+    img_ori_color = np.load(ori_color)
+    img = img_ori_color
+    im = ax.imshow(img)
+    ax.set_title('ori color')
 
     ax = fig.add_subplot(235)
     img = img_ori - img_gen
-    img = np.abs(img) * 100 
-    ax.imshow(img, cmap='gray')
-    ax.set_title('diff')
+    img = np.abs(img)
+    im = ax.imshow(img)
+    ax.set_title('diff ori vanilla')
+    fig.colorbar(im)
 
     ax = fig.add_subplot(236)
-    img = img_ori - img_opt
-    img = np.abs(img) * 100 
-    ax.imshow(img, cmap='gray')
-    ax.set_title('diff')
+    img = img_ori - img_dex
+    img = np.abs(img)
+    im = ax.imshow(img)
+    ax.set_title('diff ori dex')
+    fig.colorbar(im)
 
 
 
