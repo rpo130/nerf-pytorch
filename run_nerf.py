@@ -433,9 +433,8 @@ def render_rays(ray_batch,
 
         rgb_map, disp_map, acc_map, weights, depth_map = raw2outputs(raw, z_vals, rays_d, raw_noise_std, white_bkgd, pytest=pytest)
 
-    weights_threshold = torch.max(weights, -1).values * torch.tensor(0.95, dtype=torch.float32)
-    weights_threshold = weights_threshold[...,None].expand((weights.shape))
-    weights_ge = torch.ge(weights, weights_threshold).to(torch.uint8)
+    weights_threshold = torch.tensor(15, dtype=torch.float32).expand(raw[..., 3].shape)
+    weights_ge = torch.ge(raw[..., 3], weights_threshold).to(torch.uint8)
     first_fit_index = torch.argmax(weights_ge, -1)
     depth_ff = z_vals[torch.arange(len(first_fit_index)), first_fit_index]
 

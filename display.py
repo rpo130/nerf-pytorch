@@ -56,9 +56,9 @@ def show_pose_entry():
 
 def compare_depth():
     #2 28 46
-    ori = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/28_Depth.npy'
-    gen = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_521199/001_depth.npy'
-    opt = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_521199/001_depth_ff.npy'
+    ori = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/34_Depth.npy'
+    gen = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth.npy'
+    opt = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth_ff.npy'
 
     fig = plt.figure()
 
