@@ -39,8 +39,7 @@ def draw_pose_list(fig, pose_list):
 
     plt.show()
 
-
-if __name__ == "__main__":
+def show_pose_entry():
     with open('./data/avt_data_glass_20230118_1/transforms.json', 'r') as f:
         j = f.read()
     import json
@@ -53,3 +52,50 @@ if __name__ == "__main__":
     draw_pose_list(fig, pose_list)
 
     plt.show()
+
+
+def compare_depth():
+    #2 28 46
+    ori = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/28_Depth.npy'
+    gen = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_521199/001_depth.npy'
+    opt = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_521199/001_depth_ff.npy'
+
+    fig = plt.figure()
+
+    ax = fig.add_subplot(231)
+    img_ori = np.load(ori)
+    img = img_ori
+    ax.imshow(img, cmap='gray')
+    ax.set_title('ori')
+
+    ax = fig.add_subplot(232)
+    img_gen = np.load(gen)
+    img = img_gen
+    ax.imshow(img, cmap='gray')
+    ax.set_title('gen')
+
+    ax = fig.add_subplot(233)
+    img_opt = np.load(opt)
+    img = img_opt
+    ax.imshow(img, cmap='gray')
+    ax.set_title('opt')
+
+
+    ax = fig.add_subplot(235)
+    img = img_ori - img_gen
+    img = np.abs(img) * 100 
+    ax.imshow(img, cmap='gray')
+    ax.set_title('diff')
+
+    ax = fig.add_subplot(236)
+    img = img_ori - img_opt
+    img = np.abs(img) * 100 
+    ax.imshow(img, cmap='gray')
+    ax.set_title('diff')
+
+
+
+    plt.show()
+
+if __name__ == "__main__":
+    compare_depth()

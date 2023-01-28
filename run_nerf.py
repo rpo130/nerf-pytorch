@@ -157,7 +157,7 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
     for i, c2w in enumerate(tqdm(render_poses)):
         print(i, time.time() - t)
         t = time.time()
-        rgb, disp, acc, depth, _ = render(H, W, K, chunk=chunk, c2w=c2w[:3,:4], **render_kwargs)
+        rgb, disp, acc, depth, extra = render(H, W, K, chunk=chunk, c2w=c2w[:3,:4], **render_kwargs)
         rgbs.append(rgb.cpu().numpy())
         disps.append(disp.cpu().numpy())
         depths.append(depth.cpu().numpy())
@@ -187,6 +187,13 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             depth_npy_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
             depths_np = np.array(depths[-1], np.float64)
             np.save(depth_npy_filename, depths_np)
+
+            depth_ff = extra['depth_ff']
+            if depth_ff is not None:
+                depth_ff = depth_ff.cpu().numpy()
+                depth_ff_npy_filename = os.path.join(savedir, '{:03d}_depth_ff.npy'.format(i))
+                depths_ff_np = np.array(depth_ff, np.float64)
+                np.save(depth_ff_npy_filename, depths_ff_np)
 
 
     rgbs = np.stack(rgbs, 0)
@@ -426,7 +433,13 @@ def render_rays(ray_batch,
 
         rgb_map, disp_map, acc_map, weights, depth_map = raw2outputs(raw, z_vals, rays_d, raw_noise_std, white_bkgd, pytest=pytest)
 
-    ret = {'rgb_map' : rgb_map, 'disp_map' : disp_map, 'acc_map' : acc_map, 'depth_map' : depth_map}
+    weights_threshold = torch.max(weights, -1).values * torch.tensor(0.95, dtype=torch.float32)
+    weights_threshold = weights_threshold[...,None].expand((weights.shape))
+    weights_ge = torch.ge(weights, weights_threshold).to(torch.uint8)
+    first_fit_index = torch.argmax(weights_ge, -1)
+    depth_ff = z_vals[torch.arange(len(first_fit_index)), first_fit_index]
+
+    ret = {'rgb_map' : rgb_map, 'disp_map' : disp_map, 'acc_map' : acc_map, 'depth_map' : depth_map, 'depth_ff' : depth_ff}
     if retraw:
         ret['raw'] = raw
     if N_importance > 0:
@@ -674,9 +687,6 @@ def train():
             [0, 0, 1]
         ])
 
-    if args.render_test:
-        render_poses = np.array(poses[i_test])
-
     # Create log dir and copy the config file
     basedir = args.basedir
     expname = args.expname
@@ -695,6 +705,9 @@ def train():
 
     f = os.path.join(basedir, expname, 'split.txt')
     i_train, i_val, i_test = saveOrReloadSplit(f, i_train, i_val, i_test)
+
+    if args.render_test:
+        render_poses = np.array(poses[i_test])
 
     # Create nerf model
     render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_nerf(args)
