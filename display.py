@@ -98,8 +98,6 @@ def compare_depth():
     ax.set_title('diff ori dex')
     fig.colorbar(im)
 
-
-
     plt.show()
 
 if __name__ == "__main__":
