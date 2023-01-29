@@ -29,7 +29,5 @@ no_reload = False
 chunk = 4096
 netchunk = 4096
 
-testskip = 0
-
 render_test = True
 render_only = True

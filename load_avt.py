@@ -38,7 +38,20 @@ def gen_split(imgs, testskip):
     i_test = sorted(i_test)
     return [i_train, i_val, i_test]
 
-def load_avt_data(basedir, half_res=False, testskip=1, need_fix=True):
+def gen_split_seq(imgs, holdout=8):
+    i_train = []
+    i_val = [] 
+    i_test = []
+
+    i_test = np.arange(len(imgs))[::holdout]
+    i_val = i_test
+    i_train = np.array([i for i in np.arange(len(imgs)) if
+                    (i not in i_test and i not in i_val)])
+
+    return [i_train, i_val, i_test]
+
+
+def load_avt_data(basedir, need_fix=True):
     with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
         meta = json.load(fp)
 
@@ -78,16 +91,6 @@ def load_avt_data(basedir, half_res=False, testskip=1, need_fix=True):
     focal = float(meta['fx'])
     
     imgs = imgs[...,:3]
-
-    if half_res:
-        H = H//2
-        W = W//2
-        focal = focal/2.
-
-        imgs_half_res = np.zeros((imgs.shape[0], H, W, 3))
-        for i, img in enumerate(imgs):
-            imgs_half_res[i] = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
-        imgs = imgs_half_res
         
     fx = meta['fx']
     fy = meta['fy']
@@ -97,14 +100,13 @@ def load_avt_data(basedir, half_res=False, testskip=1, need_fix=True):
     K = np.array([
         [fx, 0, cx],
         [0, fy, cy],
-        [0, 0, 1]
-    ])
+        [0, 0, 1]])
 
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
 
-    i_split = gen_split(imgs, testskip)
+    i_split = gen_split_seq(imgs)
 
     return imgs, poses, render_poses, [H, W, focal], i_split, K
 
-def load_avt_data_v2(basedir, half_res=False, testskip=1):
-    return load_avt_data(basedir, half_res, testskip, False)
+def load_avt_data_v2(basedir):
+    return load_avt_data(basedir, False)

@@ -1,41 +1,34 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+import pytransform3d.transformations as pt
+import pytransform3d.camera as pc
+import pytransform3d.plot_utils as pp
 
-def gen_camera_point(T_):
-    size = 0.1
-    X, Y = np.meshgrid(np.linspace(-size, size, 3), np.linspace(-size, size, 3))
-    Z = np.zeros_like(X)
-    Z[1, 1] = size
-    b = np.stack([X, Y, Z, np.ones_like(X)], -1)
-    b = b @ T_.T
-    return b
 
-def draw_camera_shape(ax, b):
-    ax.plot_wireframe(b[..., 0], b[..., 1], b[..., 2], colors=['red', 'green', 'blue', 
-                                                               'black', 'black', 'black'])
-
-def draw_camera_coor(ax, ori, x,y,z):
-    ax.quiver3D(ori[0],ori[1],ori[2],x[0],x[1],x[2], length=0.1, colors='red')
-    ax.quiver3D(ori[0],ori[1],ori[2],y[0],y[1],y[2], length=0.1, colors='green')
-    ax.quiver3D(ori[0],ori[1],ori[2],z[0],z[1],z[2], length=0.1, colors='blue')
+def draw_camera_shape(ax, pose):
+    scale = 0.2
+    pt.plot_transform(ax=ax, A2B=pose, s=scale)
+    # sensor_size = np.array([0.036, 0.024])
+    # intrinsic_matrix = np.array([
+    #     [0.05, 0, sensor_size[0] / 2.0],
+    #     [0, 0.05, sensor_size[1] / 2.0],
+    #     [0, 0, 1]
+    # ])
+    # virtual_image_distance = 1
+    # pc.plot_camera(ax, 
+    #                 M=intrinsic_matrix, 
+    #                 cam2world=pose,
+    #                 virtual_image_distance=virtual_image_distance,
+    #                 sensor_size=sensor_size)
     
 def draw_pose_list(fig, pose_list):
-    ax = fig.add_subplot(projection='3d')
-
-    ori = np.array([0.,0.,0.,1.])
-
-    ax.scatter(ori[0], ori[1], ori[1], marker='o')
-
+    ax = pp.make_3d_axis(ax_s=1)
+    ax.set_xlim(0,1)
+    ax.set_ylim(-0.5,0.5)
+    ax.set_zlim(0,1)
     for pose in pose_list:
-        a = pose @ ori
-        ax.scatter(a[0], a[1], a[2])
-        draw_camera_shape(ax, gen_camera_point(pose))
-        draw_camera_coor(ax, pose@ori, pose@np.array([1.,0.,0.,0.]), pose@np.array([0.,1.,0.,0.]), pose@np.array([0.,0.,1.,0.]))
-
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
+        draw_camera_shape(ax, pose)
 
     plt.show()
 
@@ -110,4 +103,4 @@ def compare_depth():
     plt.show()
 
 if __name__ == "__main__":
-    compare_depth()
+    show_pose_entry()

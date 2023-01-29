@@ -27,7 +27,5 @@ no_reload = False
 
 chunk = 16384
 
-testskip = 0
-
 render_test = True
 render_only = True

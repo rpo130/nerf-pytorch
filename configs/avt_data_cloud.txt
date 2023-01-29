@@ -26,6 +26,4 @@ no_reload = False
 
 render_test = True
 
-testskip = 1
-
 no_ndc
