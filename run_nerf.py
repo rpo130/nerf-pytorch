@@ -751,34 +751,34 @@ def train():
     # Prepare raybatch tensor if batching random rays
     N_rand = args.N_rand
     use_batching = not args.no_batching
-    if use_batching:
-        # For random ray batching
-        print('get rays')
-        rays_all = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd, H, W, 3]
-        print('done, concats')
-        rays_rgb_all = np.concatenate([rays_all, images[:,None]], 1) # [N, ro+rd+rgb, H, W, 3]
-        rays_rgb_all = np.transpose(rays_rgb_all, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb, 3]
-        rays_rgb = np.stack([rays_rgb_all[i] for i in i_train], 0) # train images only
-        rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
-        rays_rgb = rays_rgb.astype(np.float32)
-        print('shuffle rays train')
-        np.random.shuffle(rays_rgb)
 
-        rays_rgb_val = np.stack([rays_rgb_all[i] for i in i_val], 0) # val images only
-        rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
-        rays_rgb_val = rays_rgb_val.astype(np.float32)
-        print('shuffle rays val')
-        np.random.shuffle(rays_rgb_val)
+    # For random ray batching
+    print('get rays')
+    rays_all = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd, H, W, 3]
+    print('done, concats')
+    rays_rgb_all = np.concatenate([rays_all, images[:,None]], 1) # [N, ro+rd+rgb, H, W, 3]
+    rays_rgb_all = np.transpose(rays_rgb_all, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb, 3]
+    rays_rgb = np.stack([rays_rgb_all[i] for i in i_train], 0) # train images only
+    rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
+    rays_rgb = rays_rgb.astype(np.float32)
+    print('shuffle rays train')
+    np.random.shuffle(rays_rgb)
 
-        print('done')
-        i_batch = 0
+    rays_rgb_val = np.stack([rays_rgb_all[i] for i in i_val], 0) # val images only
+    rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
+    rays_rgb_val = rays_rgb_val.astype(np.float32)
+    print('shuffle rays val')
+    np.random.shuffle(rays_rgb_val)
+
+    print('done')
+    i_batch = 0
 
     # Move training data to GPU
     if use_batching:
         # images = torch.Tensor(images).to(device)
         # poses = torch.Tensor(poses).to(device)        
         rays_rgb = torch.Tensor(rays_rgb).to(device)
-        rays_rgb_val = torch.Tensor(rays_rgb_val).to(device)
+    rays_rgb_val = torch.Tensor(rays_rgb_val).to(device)
 
 
     N_iters = args.iter + 1
