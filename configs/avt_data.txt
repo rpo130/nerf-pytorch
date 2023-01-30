@@ -1,11 +1,11 @@
-iter = 2000000
+iter = 200000
 
-expname = avt_data_glass_08
+expname = avt_data_glass_10
 basedir = ./logs
 datadir = ./data/avt_data_glass_20230118_1
 dataset_type = avt
 
-no_batching = True
+no_batching = False
 
 N_samples = 64
 N_importance = 128
@@ -15,19 +15,17 @@ half_res = False
 
 use_viewdirs = True
 raw_noise_std = 1e0
-white_bkgd = False
+white_bkgd = True
 
 i_print = 10
 i_weights = 100
-i_testset = 1000
+i_testset = 5000
 i_video = 50000
 
 no_reload = False
 
 render_test = True
 
-chunk = 16384
+no_ndc = True
 
-testskip = 1
-
-no_ndc
+lrate_decay = 50

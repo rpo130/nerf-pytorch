@@ -669,6 +669,10 @@ def train():
 
         near = 0.01
         far = 3.
+        if args.white_bkgd:
+            images = images[...,:3]*images[...,-1:] + (1.-images[...,-1:])
+        else:
+            images = images[...,:3]
 
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
@@ -750,25 +754,31 @@ def train():
     if use_batching:
         # For random ray batching
         print('get rays')
-        rays = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd, H, W, 3]
+        rays_all = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd, H, W, 3]
         print('done, concats')
-        rays_rgb = np.concatenate([rays, images[:,None]], 1) # [N, ro+rd+rgb, H, W, 3]
-        rays_rgb = np.transpose(rays_rgb, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb, 3]
-        rays_rgb = np.stack([rays_rgb[i] for i in i_train], 0) # train images only
+        rays_rgb_all = np.concatenate([rays_all, images[:,None]], 1) # [N, ro+rd+rgb, H, W, 3]
+        rays_rgb_all = np.transpose(rays_rgb_all, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb, 3]
+        rays_rgb = np.stack([rays_rgb_all[i] for i in i_train], 0) # train images only
         rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
         rays_rgb = rays_rgb.astype(np.float32)
-        print('shuffle rays')
+        print('shuffle rays train')
         np.random.shuffle(rays_rgb)
+
+        rays_rgb_val = np.stack([rays_rgb_all[i] for i in i_val], 0) # val images only
+        rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
+        rays_rgb_val = rays_rgb_val.astype(np.float32)
+        print('shuffle rays val')
+        np.random.shuffle(rays_rgb_val)
 
         print('done')
         i_batch = 0
 
     # Move training data to GPU
     if use_batching:
-        images = torch.Tensor(images).to(device)
-    poses = torch.Tensor(poses).to(device)
-    if use_batching:
+        # images = torch.Tensor(images).to(device)
+        # poses = torch.Tensor(poses).to(device)        
         rays_rgb = torch.Tensor(rays_rgb).to(device)
+        rays_rgb_val = torch.Tensor(rays_rgb_val).to(device)
 
 
     N_iters = args.iter + 1
@@ -904,6 +914,32 @@ def train():
             writer.add_scalar('psnr', psnr, global_step=i)
             if args.N_importance > 0:
                 writer.add_scalar('psnr0', psnr0, global_step=i)
+
+            # Random over all images
+            batch = rays_rgb_val[0:N_rand] # [B, 2+1, 3*?]
+            batch = torch.transpose(batch, 0, 1)
+            batch_rays, target_s = batch[:2], batch[2]
+
+            with torch.no_grad():
+                rgb, disp, acc, depth, extras = render(H, W, K, chunk=args.chunk, rays=batch_rays,
+                                                        verbose=i < 10, retraw=True,
+                                                        **render_kwargs_test)
+
+                img_loss = img2mse(rgb, target_s)
+                loss = img_loss
+                psnr = mse2psnr(img_loss)
+
+                if 'rgb0' in extras:
+                    img_loss0 = img2mse(extras['rgb0'], target_s)
+                    loss = loss + img_loss0
+                    psnr0 = mse2psnr(img_loss0)
+
+                tqdm.write(f"[VAL] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
+                writer.add_scalar('loss val', loss, global_step=i)
+                writer.add_scalar('psnr val', psnr, global_step=i)
+                if args.N_importance > 0:
+                    writer.add_scalar('psnr0 val', psnr0, global_step=i)
+
 
         """
             print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())

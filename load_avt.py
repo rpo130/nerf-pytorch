@@ -51,7 +51,7 @@ def gen_split_seq(imgs, holdout=8):
     return [i_train, i_val, i_test]
 
 
-def load_avt_data(basedir, need_fix=True):
+def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
     with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
         meta = json.load(fp)
 
@@ -65,9 +65,14 @@ def load_avt_data(basedir, need_fix=True):
         if '.png' not in file_path:
             file_path = file_path + '.png'
         fname = os.path.join(basedir, file_path)
-        imgs.append(imageio.imread(fname))
+        img = imageio.imread(fname)
+        if need_fix_boarder:
+            mask_image = np.zeros_like(img)
+            mask_image[90:390, 120:520, ...] = img[90:390, 120:520, ...]
+            img = mask_image
+        imgs.append(img)
         T_cam_to_world = np.array(frame['transform_matrix'])
-        if need_fix:
+        if need_fix_pose:
             #fix poses
             T_cam_face_to_world = T_cam_to_world
 
@@ -90,7 +95,7 @@ def load_avt_data(basedir, need_fix=True):
     # focal = .5 * W / np.tan(.5 * camera_angle_x)
     focal = float(meta['fx'])
     
-    imgs = imgs[...,:3]
+    # imgs = imgs[...,:3]
         
     fx = meta['fx']
     fy = meta['fy']
