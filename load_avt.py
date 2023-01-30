@@ -67,9 +67,7 @@ def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
         fname = os.path.join(basedir, file_path)
         img = imageio.imread(fname)
         if need_fix_boarder:
-            mask_image = np.zeros_like(img)
-            mask_image[90:390, 120:520, ...] = img[90:390, 120:520, ...]
-            img = mask_image
+            img = img[90:390, 120:520, ...]
         imgs.append(img)
         T_cam_to_world = np.array(frame['transform_matrix'])
         if need_fix_pose:
@@ -93,19 +91,25 @@ def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
     # angle error in avt data
     # camera_angle_x = float(meta['camera_angle_x'])
     # focal = .5 * W / np.tan(.5 * camera_angle_x)
-    focal = float(meta['fx'])
-    
-    # imgs = imgs[...,:3]
         
     fx = meta['fx']
     fy = meta['fy']
     cx = meta['cx']
     cy = meta['cy']
 
+    if need_fix_boarder:
+        fx = fx * 5. / 8.
+        fy = fy * 5. / 8.
+        cx = cx * 5. / 8.
+        cy = cy * 5. / 8.
+
     K = np.array([
         [fx, 0, cx],
         [0, fy, cy],
         [0, 0, 1]])
+
+    focal = fx
+
 
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
 
