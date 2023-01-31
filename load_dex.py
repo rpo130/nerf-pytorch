@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import cv2
 from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
 
-def load_dex_data(basedir, half_res=False, testskip=1):
+def load_dex_data(basedir, testskip=1):
     splits = ['train', 'val', 'test']
     metas = {}
     for s in splits:
@@ -43,20 +43,9 @@ def load_dex_data(basedir, half_res=False, testskip=1):
     
     H, W = imgs[0].shape[:2]
     camera_angle_x = float(meta['camera_angle_x'])
-    focal = .5 * W / np.tan(.5 * camera_angle_x)
+    # focal = .5 * W / np.tan(.5 * camera_angle_x)
     
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
-    
-    if half_res:
-        H = H//2
-        W = W//2
-        focal = focal/2.
-
-        imgs_half_res = np.zeros((imgs.shape[0], H, W, 3))
-        for i, img in enumerate(imgs):
-            imgs_half_res[i] = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
-        imgs = imgs_half_res
-        # imgs = tf.image.resize_area(imgs, [400, 400]).numpy()
     
     fx = metas['train']['fx']
     fy = metas['train']['fy']
@@ -68,11 +57,12 @@ def load_dex_data(basedir, half_res=False, testskip=1):
         [0, fy, cy],
         [0, 0, 1]
     ])
-        
+    focal = fx
+    
     return imgs, poses, render_poses, [H, W, focal], i_split, K
 
 
-def load_dex_simulated(basedir, half_res=False, testskip=1):
+def load_dex_simulated(basedir, testskip=1):
     splits = ['train', 'val', 'test']
     metas = {}
     for s in splits:
@@ -108,23 +98,12 @@ def load_dex_simulated(basedir, half_res=False, testskip=1):
     
     H, W = imgs[0].shape[:2]
     camera_angle_x = float(meta['camera_angle_x'])
-    focal = .5 * W / np.tan(.5 * camera_angle_x)
+    # focal = .5 * W / np.tan(.5 * camera_angle_x)
     
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
     
     imgs = imgs[...,0:3]
-
-    if half_res:
-        H = H//2
-        W = W//2
-        focal = focal/2.
-
-        imgs_half_res = np.zeros((imgs.shape[0], H, W, 3))
-        for i, img in enumerate(imgs):
-            imgs_half_res[i] = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
-        imgs = imgs_half_res
-        # imgs = tf.image.resize_area(imgs, [400, 400]).numpy()
-        
+      
     fx = metas['train']['fx']
     fy = metas['train']['fy']
     cx = metas['train']['cx']
@@ -135,5 +114,6 @@ def load_dex_simulated(basedir, half_res=False, testskip=1):
         [0, fy, cy],
         [0, 0, 1]
     ])
+    focal = fx
         
     return imgs, poses, render_poses, [H, W, focal], i_split, K

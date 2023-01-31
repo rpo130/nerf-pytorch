@@ -647,20 +647,20 @@ def train():
         far = hemi_R+1.
 
     elif args.dataset_type == 'dex':
-        images, poses, render_poses, hwf, i_split, K = load_dex_data(args.datadir, args.half_res, args.testskip)
+        images, poses, render_poses, hwf, i_split, K = load_dex_data(args.datadir, args.testskip)
         print('Loaded dex', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.1
-        far = 1
+        near = 0.01
+        far = 2
 
     elif args.dataset_type == 'dexsimulated':
-        images, poses, render_poses, hwf, i_split, K = load_dex_simulated(args.datadir, args.half_res, args.testskip)
+        images, poses, render_poses, hwf, i_split, K = load_dex_simulated(args.datadir, args.testskip)
         print('Loaded dexsimulated', images.shape, render_poses.shape, hwf, args.datadir)
         i_train, i_val, i_test = i_split
 
-        near = 0.5
-        far = 10
+        near = 0.01
+        far = 5
         
     elif args.dataset_type == 'avt':
         images, poses, render_poses, hwf, i_split, K = load_avt_data(args.datadir)

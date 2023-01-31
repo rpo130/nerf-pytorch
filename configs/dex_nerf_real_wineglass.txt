@@ -1,26 +1,23 @@
 iter = 200000
 
-expname = dex_nerf_real_wineglass_01
+expname = dex_nerf_real_wineglass_02
 basedir = ./logs
 datadir = ./data/dex_nerf_real_wineglass
 dataset_type = dex
 
-no_batching = True
+no_batching = False
 
 N_samples = 64
 N_importance = 128
 N_rand = 1024
-
-half_res = False
 
 use_viewdirs = True
 raw_noise_std = 1e0
 white_bkgd = False
 
 i_print = 10
-i_img = 10000
 i_weights = 100
-i_testset = 1000
+i_testset = 5000
 i_video = 100000
 
 no_reload = False
@@ -29,6 +26,8 @@ render_test = True
 
 chunk = 16384
 
-testskip = 50
+testskip = 15
 
-no_ndc
+no_ndc = True
+
+lrate_decay = 25
