@@ -51,7 +51,7 @@ def gen_split_seq(imgs, holdout=8):
     return [i_train, i_val, i_test]
 
 
-def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
+def load_avt_data(basedir, need_fix_pose=True):
     with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
         meta = json.load(fp)
 
@@ -66,8 +66,6 @@ def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
             file_path = file_path + '.png'
         fname = os.path.join(basedir, file_path)
         img = imageio.imread(fname)
-        if need_fix_boarder:
-            img = img[90:390, 120:520, ...]
         imgs.append(img)
         T_cam_to_world = np.array(frame['transform_matrix'])
         if need_fix_pose:
@@ -97,19 +95,12 @@ def load_avt_data(basedir, need_fix_pose=True, need_fix_boarder=True):
     cx = meta['cx']
     cy = meta['cy']
 
-    if need_fix_boarder:
-        fx = fx * 5. / 8.
-        fy = fy * 5. / 8.
-        cx = cx * 5. / 8.
-        cy = cy * 5. / 8.
-
     K = np.array([
         [fx, 0, cx],
         [0, fy, cy],
         [0, 0, 1]])
 
     focal = fx
-
 
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
 
