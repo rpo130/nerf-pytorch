@@ -114,3 +114,4 @@ def crop_img(basedir, factor):
 
 crop_img('data/avt_kinect_glass_20230131_1', (8,10))
 crop_img('data/avt_data_glass_20230118_1', (5,8))
+crop_img('data/avt_data_glass_light_20230115_1', (5,8))
