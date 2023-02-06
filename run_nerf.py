@@ -182,18 +182,20 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
                 imageio.imwrite(gt_filename, gt_img)
 
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
-            imageio.imwrite(depth_filename, to8b(depths[-1]))
+            imageio.imwrite(depth_filename, (depths[-1]*1000).astype(np.uint16))
 
             depth_npy_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
             depths_np = np.array(depths[-1], np.float64)
             np.save(depth_npy_filename, depths_np)
 
-            depth_ff = extra['depth_ff']
-            if depth_ff is not None:
-                depth_ff = depth_ff.cpu().numpy()
-                depth_ff_npy_filename = os.path.join(savedir, '{:03d}_depth_ff.npy'.format(i))
-                depths_ff_np = np.array(depth_ff, np.float64)
-                np.save(depth_ff_npy_filename, depths_ff_np)
+            dexdepth_map = extra['dexdepth_map']
+            if dexdepth_map is not None:
+                dexdepth_map = dexdepth_map.cpu().numpy()
+                dexdepth_map_npy_filename = os.path.join(savedir, '{:03d}_dexdepth.npy'.format(i))
+                np.save(dexdepth_map_npy_filename, dexdepth_map)
+
+                dexdepth_filename = os.path.join(savedir, '{:03d}_dexdepth.png'.format(i))
+                imageio.imwrite(dexdepth_filename, (dexdepth_map*1000).astype(np.uint16))
 
 
     rgbs = np.stack(rgbs, 0)
@@ -433,12 +435,11 @@ def render_rays(ray_batch,
 
         rgb_map, disp_map, acc_map, weights, depth_map = raw2outputs(raw, z_vals, rays_d, raw_noise_std, white_bkgd, pytest=pytest)
 
-    weights_threshold = torch.tensor(15, dtype=torch.float32).expand(raw[..., 3].shape)
-    weights_ge = torch.ge(raw[..., 3], weights_threshold).to(torch.uint8)
+    weights_ge = torch.ge(raw[..., 3], 15).to(torch.uint8)
     first_fit_index = torch.argmax(weights_ge, -1)
-    depth_ff = z_vals[torch.arange(len(first_fit_index)), first_fit_index]
+    dexdepth_map = z_vals[torch.arange(len(first_fit_index)), first_fit_index]
 
-    ret = {'rgb_map' : rgb_map, 'disp_map' : disp_map, 'acc_map' : acc_map, 'depth_map' : depth_map, 'depth_ff' : depth_ff}
+    ret = {'rgb_map' : rgb_map, 'disp_map' : disp_map, 'acc_map' : acc_map, 'depth_map' : depth_map, 'dexdepth_map' : dexdepth_map}
     if retraw:
         ret['raw'] = raw
     if N_importance > 0:
