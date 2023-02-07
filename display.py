@@ -46,59 +46,94 @@ def show_pose_entry():
 
     plt.show()
 
+def draw(fig, axs, data, expand, iter, test_i):
+    ori = f'./data/{data}/np/{test_i*8}_Depth.npy'
+    ori_color = f'./data/{data}/np/{test_i*8}_Color.npy'
+    gen = f'./logs/{expand}/testset_{iter:06d}/{test_i:03d}_depth.npy'
+    opt = f'./logs/{expand}/testset_{iter:06d}/{test_i:03d}_depth_ff.npy'
 
-def compare_depth():
-    #2 28 46
-    ori = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/34_Depth.npy'
-    ori_color = '/home/ai/codebase/nerf-pytorch/data/avt_data_glass_20230118_1/np/34_Color.npy'
-    gen = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth.npy'
-    opt = '/home/ai/codebase/nerf-pytorch/logs/avt_data_test/renderonly_test_739999/004_depth_ff.npy'
-
-    fig = plt.figure()
-
-    ax = fig.add_subplot(231)
+    ax = axs[0,0]
     img_ori = np.load(ori)
     img = img_ori
     im = ax.imshow(img, cmap='gray')
     ax.set_title('ori depth')
-    fig.colorbar(im)
 
-    ax = fig.add_subplot(232)
+    ax = axs[0,1]
     img_gen = np.load(gen)
     img = img_gen
     im = ax.imshow(img, cmap='gray')
-    fig.colorbar(im)
-
     ax.set_title('vanilla')
 
-    ax = fig.add_subplot(233)
+    ax = axs[0,2]
     img_dex = np.load(opt)
     img = img_dex
     im = ax.imshow(img, cmap='gray')
     ax.set_title('dex')
-    fig.colorbar(im)
 
-    ax = fig.add_subplot(234)
+    ax = axs[1,0]
     img_ori_color = np.load(ori_color)
     img = img_ori_color
     im = ax.imshow(img)
     ax.set_title('ori color')
 
-    ax = fig.add_subplot(235)
+    ax = axs[1,1]
     img = img_ori - img_gen
     img = np.abs(img)
-    im = ax.imshow(img)
+    im = ax.imshow(img, cmap='gray')
     ax.set_title('diff ori vanilla')
-    fig.colorbar(im)
 
-    ax = fig.add_subplot(236)
+    ax = axs[1,2]
     img = img_ori - img_dex
     img = np.abs(img)
-    im = ax.imshow(img)
+    im = ax.imshow(img, cmap='gray')
     ax.set_title('diff ori dex')
-    fig.colorbar(im)
+
+    fig.canvas.draw_idle()
+
+
+def compare_depth():
+    d = {
+        'avt_data_glass_20230204_1' : '1280x720 normal light',
+        'avt_data_glass_20230204_2' : '1280x720 dark light',
+        'avt_data_glass_20230204_3' : '1280x720 high light',
+        'avt_data_glass_20230204_4' : '640x480 high light',
+        'avt_data_glass_20230204_5' : '640x480 high light, background',
+        'avt_data_glass_20230204_6' : '1280x720 high light, background',
+        'avt_data_glass_20230204_7' : '640x480 high light, background, warm light',
+        'avt_data_glass_20230204_8' : '1280x720 high light, background, warm light',
+        }
+
+    data_name = 'avt_data_glass_20230204_7'
+    expand_name = 'avt_data_glass_20230204_7'
+    iter = 200000
+    test_i = 0
+
+    fig = plt.figure()
+    fig.subplots_adjust(bottom=0.2)
+    fig.suptitle(f'{d[data_name]}')
+    axs = fig.subplots(2,3)
+
+    from matplotlib.colors import Normalize
+    import matplotlib.cm as cm
+    cmap=cm.get_cmap('gray')
+    normalizer=Normalize(0,1)
+    im=cm.ScalarMappable(norm=normalizer, cmap=cmap)
+    fig.colorbar(im, ax=axs.ravel().tolist())
+
+    draw(fig, axs, data_name, expand_name,iter, test_i)
+
+    from matplotlib.widgets import Slider
+    ax_slider = plt.axes([0.20, 0.01, 0.65, 0.03])
+    slider = Slider(ax_slider, 'test_image', 0,10, valinit=0, valstep=1)
+    
+    def update(val):
+        nonlocal test_i
+        test_i = int(val)
+        draw(fig, axs, data_name, expand_name,iter, test_i)
+    slider.on_changed(update)
 
     plt.show()
 
 if __name__ == "__main__":
-    show_pose_entry()
+    # show_pose_entry()
+    compare_depth()
