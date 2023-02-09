@@ -24,9 +24,9 @@ def draw_camera_shape(ax, pose):
     
 def draw_pose_list(fig, pose_list):
     ax = pp.make_3d_axis(ax_s=1)
-    ax.set_xlim(0,1)
-    ax.set_ylim(-0.5,0.5)
-    ax.set_zlim(0,1)
+    # ax.set_xlim(0,1)
+    # ax.set_ylim(-0.5,0.5)
+    # ax.set_zlim(0,1)
     for pose in pose_list:
         draw_camera_shape(ax, pose)
 
@@ -37,12 +37,11 @@ def show_pose_entry():
         j = f.read()
     import json
     j = json.loads(j)
-    print(j)
     pose_list = []
     for i in j['frames']:
         pose_list.append(np.array(i['transform_matrix']))
     fig = plt.figure()
-    draw_pose_list(fig, pose_list)
+    draw_pose_list(fig, pose_list[::10])
 
     plt.show()
 
@@ -103,8 +102,8 @@ def compare_depth():
         'avt_data_glass_20230204_8' : '1280x720 high light, background, warm light',
         }
 
-    data_name = 'avt_data_glass_20230204_7'
-    expand_name = 'avt_data_glass_20230204_7'
+    data_name = 'avt_data_glass_20230204_8'
+    expand_name = 'avt_data_glass_20230204_8_2'
     iter = 200000
     test_i = 0
 
@@ -135,5 +134,5 @@ def compare_depth():
     plt.show()
 
 if __name__ == "__main__":
-    # show_pose_entry()
-    compare_depth()
+    show_pose_entry()
+    # compare_depth()

@@ -98,22 +98,12 @@ def load_dex_simulated(basedir, testskip=1):
     
     H, W = imgs[0].shape[:2]
     camera_angle_x = float(meta['camera_angle_x'])
-    # focal = .5 * W / np.tan(.5 * camera_angle_x)
+    focal = .5 * W / np.tan(.5 * camera_angle_x)
     
     render_poses = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
     
     imgs = imgs[...,0:3]
       
-    fx = metas['train']['fx']
-    fy = metas['train']['fy']
-    cx = metas['train']['cx']
-    cy = metas['train']['cy']
-
-    K = np.array([
-        [fx, 0, cx],
-        [0, fy, cy],
-        [0, 0, 1]
-    ])
-    focal = fx
+    K = None
         
     return imgs, poses, render_poses, [H, W, focal], i_split, K
