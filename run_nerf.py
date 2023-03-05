@@ -1,11 +1,8 @@
-import os, sys
+import os
 import numpy as np
 import imageio
-import json
-import random
 import time
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm, trange
 from torch.utils.tensorboard import SummaryWriter
@@ -280,7 +277,7 @@ def create_nerf(args):
     }
 
     # NDC only good for LLFF-style forward facing data
-    if args.dataset_type != 'llff' or args.no_ndc:
+    if args.no_ndc:
         print('Not ndc!')
         render_kwargs_train['ndc'] = False
         render_kwargs_train['lindisp'] = args.lindisp
@@ -678,6 +675,11 @@ def train():
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
+
+    if not args.no_ndc:
+        near = 0.
+        far = 1.
+    print('NEAR FAR', near, far)
 
     # Cast intrinsics to right types
     H, W, focal = hwf
