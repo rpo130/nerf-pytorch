@@ -112,6 +112,27 @@ def crop_img(basedir, factor):
     
     print('finish')
 
-crop_img('data/avt_kinect_glass_20230131_1', (8,10))
-crop_img('data/avt_data_glass_20230118_1', (5,8))
-crop_img('data/avt_data_glass_light_20230115_1', (5,8))
+def center(basedir, T_scene_to_world):
+    with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
+        meta = json.load(fp)
+        
+        for frame in meta['frames'][::1]:
+            T_cam_to_world = np.array(frame['transform_matrix'])
+            T_cam_face_to_world = T_cam_to_world
+
+            T_cam_face_to_scene = np.linalg.inv(T_scene_to_world) @ T_cam_face_to_world
+            
+            T_cam_to_world = T_cam_face_to_scene
+            frame['transform_matrix'] = T_cam_to_world.tolist()
+
+        json_object = json.dumps(meta, indent=2)
+        with open(os.path.join(basedir, "transforms_center.json"), "w") as outfile:
+            outfile.write(json_object)
+
+# crop_img('data/avt_kinect_glass_20230131_1', (8,10))
+# crop_img('data/avt_data_glass_20230118_1', (5,8))
+# crop_img('data/avt_data_glass_light_20230115_1', (5,8))
+
+T_s2w = np.eye(4)
+T_s2w[0:3,3] = [0.6, 0, 0]
+center('data/avt_20230218_glass_6', T_s2w)

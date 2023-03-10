@@ -32,8 +32,8 @@ def draw_pose_list(fig, pose_list):
 
     plt.show()
 
-def show_pose_entry():
-    with open('./data/avt_data_glass_20230118_1/transforms.json', 'r') as f:
+def show_pose_entry(config_file):
+    with open(config_file, 'r') as f:
         j = f.read()
     import json
     j = json.loads(j)
@@ -41,7 +41,7 @@ def show_pose_entry():
     for i in j['frames']:
         pose_list.append(np.array(i['transform_matrix']))
     fig = plt.figure()
-    draw_pose_list(fig, pose_list[::10])
+    draw_pose_list(fig, pose_list[::2])
 
     plt.show()
 
@@ -134,5 +134,5 @@ def compare_depth():
     plt.show()
 
 if __name__ == "__main__":
-    show_pose_entry()
+    show_pose_entry('./data/avt_20230218_glass_6/transforms_center.json')
     # compare_depth()
