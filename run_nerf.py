@@ -180,10 +180,12 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
                 gt_img = gt_imgs[i]
                 if isinstance(gt_img, torch.Tensor):
                     gt_img = gt_img.cpu().numpy()
-                imageio.imwrite(gt_filename, gt_img)
+                imageio.imwrite(gt_filename, to8b(gt_img))
 
             depth_filename = os.path.join(savedir, '{:03d}_depth.png'.format(i))
-            imageio.imwrite(depth_filename, (depths[-1]*1000).astype(np.uint16))
+            depthtmp = depths[-1]
+            depthtmp = to8b((depthtmp - np.min(depthtmp)) / (np.max(depthtmp) - np.min(depthtmp)))
+            imageio.imwrite(depth_filename, depthtmp)
 
             depth_npy_filename = os.path.join(savedir, '{:03d}_depth.npy'.format(i))
             depths_np = np.array(depths[-1], np.float64)
@@ -196,7 +198,8 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
                 np.save(dexdepth_map_npy_filename, dexdepth_map)
 
                 dexdepth_filename = os.path.join(savedir, '{:03d}_dexdepth.png'.format(i))
-                imageio.imwrite(dexdepth_filename, (dexdepth_map*1000).astype(np.uint16))
+                dexdepth_map = to8b((dexdepth_map - np.min(dexdepth_map))/(np.max(dexdepth_map) - np.min(dexdepth_map)))
+                imageio.imwrite(dexdepth_filename, dexdepth_map)
 
 
     rgbs = np.stack(rgbs, 0)
@@ -783,7 +786,7 @@ def train():
     print('done')
     i_batch = 0
 
-    N_iters = args.iter + 1
+    N_iters = args.iter
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
