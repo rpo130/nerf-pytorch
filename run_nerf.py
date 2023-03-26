@@ -17,11 +17,15 @@ from load_blender import load_blender_data
 from load_LINEMOD import load_LINEMOD_data
 from load_dex import load_dex_data,load_dex_simulated
 from load_avt import load_avt_data
-
+import random
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+random.seed(0)
 np.random.seed(0)
+torch.manual_seed(0)
+torch.cuda.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 DEBUG = False
 
 
@@ -764,25 +768,20 @@ def train():
     rays_rgb = np.stack([rays_rgb_all[i] for i in i_train], 0) # train images only
     rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
     rays_rgb = rays_rgb.astype(np.float32)
-    print('shuffle rays train')
-    np.random.shuffle(rays_rgb)
 
     rays_rgb_val = np.stack([rays_rgb_all[i] for i in i_val], 0) # val images only
     rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
     rays_rgb_val = rays_rgb_val.astype(np.float32)
-    print('shuffle rays val')
-    np.random.shuffle(rays_rgb_val)
 
+
+    print('shuffle rays train')
+    rays_rgb = torch.Tensor(rays_rgb).to(device)
+    rays_rgb = rays_rgb[torch.randperm(len(rays_rgb))]
+    print('shuffle rays val')
+    rays_rgb_val = torch.Tensor(rays_rgb_val).to(device)
+    rays_rgb_val = rays_rgb_val[torch.randperm(len(rays_rgb_val))]
     print('done')
     i_batch = 0
-
-    # Move training data to GPU
-    if use_batching:
-        # images = torch.Tensor(images).to(device)
-        # poses = torch.Tensor(poses).to(device)        
-        rays_rgb = torch.Tensor(rays_rgb).to(device)
-    rays_rgb_val = torch.Tensor(rays_rgb_val).to(device)
-
 
     N_iters = args.iter + 1
     print('Begin')
@@ -827,12 +826,12 @@ def train():
                     coords = torch.stack(
                         torch.meshgrid(
                             torch.linspace(H//2 - dH, H//2 + dH - 1, 2*dH), 
-                            torch.linspace(W//2 - dW, W//2 + dW - 1, 2*dW)
+                            torch.linspace(W//2 - dW, W//2 + dW - 1, 2*dW), indexing='ij'
                         ), -1)
                     if i == start:
                         print(f"[Config] Center cropping of size {2*dH} x {2*dW} is enabled until iter {args.precrop_iters}")                
                 else:
-                    coords = torch.stack(torch.meshgrid(torch.linspace(0, H-1, H), torch.linspace(0, W-1, W)), -1)  # (H, W, 2)
+                    coords = torch.stack(torch.meshgrid(torch.linspace(0, H-1, H), torch.linspace(0, W-1, W), indexing='ij'), -1)  # (H, W, 2)
 
                 coords = torch.reshape(coords, [-1,2])  # (H * W, 2)
                 select_inds = np.random.choice(coords.shape[0], size=[N_rand], replace=False)  # (N_rand,)
