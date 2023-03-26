@@ -50,13 +50,10 @@ def gen_split_seq(imgs, holdout=8):
 
     return [i_train, i_val, i_test]
 
-
-def load_avt_data(basedir, need_fix_pose=True):
+def load_avt_data(basedir):
     with open(os.path.join(basedir, 'transforms.json'), 'r') as fp:
         meta = json.load(fp)
 
-    all_imgs = []
-    all_poses = []
     imgs = []
     poses = []
         
@@ -68,27 +65,13 @@ def load_avt_data(basedir, need_fix_pose=True):
         img = imageio.imread(fname)
         imgs.append(img)
         T_cam_to_world = np.array(frame['transform_matrix'])
-        if need_fix_pose:
-            #fix poses
-            T_cam_face_to_world = T_cam_to_world
-
-            T_img_to_cam_face = np.eye(4) 
-            T_img_to_cam_face[:3, :3] = R.from_euler("xyz", [180, 0, 0], degrees=True).as_matrix()
-            T_cam_to_world = T_cam_face_to_world @ T_img_to_cam_face
-
+        #rdf -> rub, r:right d:down u:up f:forward, point out
+        T_cam_to_world[..., 1:3] = -1 * T_cam_to_world[..., 1:3]
         poses.append(T_cam_to_world)
     imgs = (np.array(imgs) / 255.).astype(np.float32)
     poses = np.array(poses).astype(np.float32)
-    all_imgs.append(imgs)
-    all_poses.append(poses)
         
-    imgs = np.concatenate(all_imgs, 0)
-    poses = np.concatenate(all_poses, 0)
-    
     H, W = imgs[0].shape[:2]
-    # angle error in avt data
-    # camera_angle_x = float(meta['camera_angle_x'])
-    # focal = .5 * W / np.tan(.5 * camera_angle_x)
         
     fx = meta['fx']
     fy = meta['fy']
@@ -106,7 +89,9 @@ def load_avt_data(basedir, need_fix_pose=True):
 
     i_split = gen_split_seq(imgs)
 
-    return imgs, poses, render_poses, [H, W, focal], i_split, K
+    # center
+    from fix_avt import center_poses
+    poses[..., :3, :4], _ = center_poses(poses[..., :3, :4])
 
-def load_avt_data_v2(basedir):
-    return load_avt_data(basedir, False)
+    return imgs, poses, \
+            render_poses, [H, W, focal], i_split, K
