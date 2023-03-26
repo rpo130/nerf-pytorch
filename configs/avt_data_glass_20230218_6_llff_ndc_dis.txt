@@ -1,0 +1,34 @@
+iter = 200000
+
+expname = avt_data_glass_20230218_6_llff_ndc_dis
+basedir = ./logs
+datadir = ./data/avt_data_glass_20230218_6
+dataset_type = llff
+
+no_batching = False
+
+N_samples = 64
+N_importance = 128
+N_rand = 2048
+
+use_viewdirs = True
+raw_noise_std = 1e0
+white_bkgd = False
+
+i_print = 10
+i_weights = 5000
+i_testset = 10000
+i_video = 5000000
+
+no_reload = False
+
+render_test = True
+
+no_ndc = False
+
+testskip = 5
+
+lrate_decay = 100
+factor = 1
+llffhold = 8
+lindisp = True
