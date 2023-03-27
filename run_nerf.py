@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 
 from run_nerf_helpers import *
 
-from load_llff import load_llff_data
-from load_deepvoxels import load_dv_data
-from load_blender import load_blender_data
-from load_LINEMOD import load_LINEMOD_data
-from load_dex import load_dex_data,load_dex_simulated
-from load_avt import load_avt_data
+from load.load_llff import load_llff_data
+from load.load_deepvoxels import load_dv_data
+from load.load_blender import load_blender_data
+from load.load_LINEMOD import load_LINEMOD_data
+from load.load_dex import load_dex_data,load_dex_simulated
+from load.load_avt import load_avt_data
 import random
 
 
