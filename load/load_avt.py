@@ -4,7 +4,7 @@ import numpy as np
 import imageio 
 import json
 import cv2
-from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
+from .load_blender import trans_t, rot_phi, rot_theta, pose_spherical
 import random
 from scipy.spatial.transform import Rotation as R
 

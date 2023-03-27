@@ -5,7 +5,7 @@ import imageio
 import json
 import torch.nn.functional as F
 import cv2
-from load_blender import trans_t, rot_phi, rot_theta, pose_spherical
+from .load_blender import trans_t, rot_phi, rot_theta, pose_spherical
 
 def load_dex_data(basedir, testskip=1):
     splits = ['train', 'val', 'test']

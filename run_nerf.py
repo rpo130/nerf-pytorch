@@ -715,10 +715,6 @@ def train():
         with open(f, 'w') as file:
             file.write(open(args.config, 'r').read())
     
-
-    f = os.path.join(basedir, expname, 'split.txt')
-    i_train, i_val, i_test = saveOrReloadSplit(f, i_train, i_val, i_test)
-
     if args.render_test:
         render_poses = np.array(poses[i_test])
 
@@ -990,33 +986,6 @@ def train():
 
         global_step += 1
     writer.close()
-
-def saveOrReloadSplit(f, i_train, i_val, i_test):
-    if os.path.exists(f):
-        with open(f, 'r') as file:
-            for l in file:
-                split_type, split_index = l.split("=")
-                split_type = split_type.strip()
-                split_index = split_index.strip().split(',')
-                split_index = [int(i) for i in split_index]
-                if split_type == 'train':
-                    i_train = split_index
-                    continue
-                if split_type == 'val':
-                    i_val = split_index
-                    continue
-                if split_type == 'test':
-                    i_test = split_index
-                    continue
-                print(f'error {l} {len(l)}')
-                return   
-            print(f'restore split, train:{i_train}, val:{i_val}, test:{i_test}')
-    else:
-        with open(f, 'w') as file:
-            file.write(f"train = {','.join(str(i) for i in i_train)}\n")
-            file.write(f"val = {','.join(str(i) for i in i_val)}\n")
-            file.write(f"test = {','.join(str(i) for i in i_test)}\n")
-    return i_train, i_val, i_test
 
 if __name__=='__main__':
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
