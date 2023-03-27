@@ -58,6 +58,8 @@ def run_network(inputs, viewdirs, fn, embed_fn, embeddirs_fn, netchunk=1024*64):
 
 def batchify_rays(rays_flat, chunk=1024*32, **kwargs):
     """Render rays in smaller minibatches to avoid OOM.
+    Args:
+        rays_flat: [batch, 11or8]
     """
     all_ret = {}
     for i in range(0, rays_flat.shape[0], chunk):
@@ -120,12 +122,16 @@ def render(H, W, K, chunk=1024*32, rays=None, c2w=None, ndc=True,
         rays_o, rays_d = ndc_rays(H, W, K[0][0], 1., rays_o, rays_d)
 
     # Create ray batch
+    # [N_rays, 3]
     rays_o = torch.reshape(rays_o, [-1,3]).float()
+    # [N_rays, 3]
     rays_d = torch.reshape(rays_d, [-1,3]).float()
 
     near, far = near * torch.ones_like(rays_d[...,:1]), far * torch.ones_like(rays_d[...,:1])
+    # [N_rays, 3+3+1+1]
     rays = torch.cat([rays_o, rays_d, near, far], -1)
     if use_viewdirs:
+        #[N_rays, 3+3+1+1+3]
         rays = torch.cat([rays, viewdirs], -1)
 
     # Render and reshape
@@ -760,16 +766,19 @@ def train():
 
     # For random ray batching
     print('get rays')
-    rays_all = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd, H, W, 3]
+    # poses [N_img, 4,4]
+    rays_all = np.stack([get_rays_np(H, W, K, p) for p in poses[:,:3,:4]], 0) # [N, ro+rd(2), H, W, 3]
     print('done, concats')
-    rays_rgb_all = np.concatenate([rays_all, images[:,None]], 1) # [N, ro+rd+rgb, H, W, 3]
-    rays_rgb_all = np.transpose(rays_rgb_all, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb, 3]
+
+    rays_rgb_all = np.concatenate([rays_all, images[:,None]], 1) # [N, ro+rd+rgb(3), H, W, 3]
+    rays_rgb_all = np.transpose(rays_rgb_all, [0,2,3,1,4]) # [N, H, W, ro+rd+rgb(3), 3]
+
     rays_rgb = np.stack([rays_rgb_all[i] for i in i_train], 0) # train images only
-    rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
+    rays_rgb = np.reshape(rays_rgb, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb(3), 3]
     rays_rgb = rays_rgb.astype(np.float32)
 
     rays_rgb_val = np.stack([rays_rgb_all[i] for i in i_val], 0) # val images only
-    rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb, 3]
+    rays_rgb_val = np.reshape(rays_rgb_val, [-1,3,3]) # [(N-1)*H*W, ro+rd+rgb(3), 3]
     rays_rgb_val = rays_rgb_val.astype(np.float32)
 
 

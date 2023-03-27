@@ -169,6 +169,7 @@ def get_rays_np(H, W, K, c2w):
     rays_d = np.sum(dirs[..., np.newaxis, :] * c2w[:3,:3], -1)  # dot product, equals to: [c2w.dot(dir) for dir in dirs]
     # Translate camera frame's origin to the world frame. It is the origin of all rays.
     rays_o = np.broadcast_to(c2w[:3,-1], np.shape(rays_d))
+    #rays_o [H,W,3], rays_d [H,W,3]
     return rays_o, rays_d
 
 
